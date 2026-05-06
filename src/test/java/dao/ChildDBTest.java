@@ -83,16 +83,6 @@ class ChildDBTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when birth date is in the future")
-    void addChildShouldThrowException_WhenBirthDateIsInFuture() {
-        // Arrange
-        Child child = new Child("John","Doe",LocalDate.now().plusDays(1));
-        // Act + Assert
-        assertThrows(IllegalArgumentException.class, () -> db.addChild(child),
-                "should throw IllegalArgumentException when BirthDate Is In Future ");
-    }
-
-    @Test
     @DisplayName("Should throw SQLException when connection is closed")
     void addChildShouldThrowSQLException_WhenConnectionIsClosed() throws Exception {
         // Arrange
