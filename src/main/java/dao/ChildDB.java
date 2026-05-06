@@ -18,6 +18,7 @@ public class ChildDB implements ChildDAO, AutoCloseable {
     private static final String SQL_DELETE_CHILD = "DELETE FROM child WHERE id = ?;";
     private static final String SQL_SELECT_CHILDREN_BY_MIN_AGE = "SELECT id, first_name, last_name, birth_date FROM child WHERE EXTRACT(YEAR FROM AGE(birth_date)) >= ?;";
     private static final String SQL_SELECT_CHILDREN_WITHOUT_BIRTHDATE = "SELECT id, first_name, last_name, birth_date FROM child WHERE birth_date IS NULL;";
+    private static final String SQL_SELECT_CHILD_BY_ID = "SELECT id, first_name, last_name, birth_date FROM child WHERE id = ?;";
 
     private final Connection conn;
     private final boolean ownsConnection;
@@ -154,6 +155,37 @@ public class ChildDB implements ChildDAO, AutoCloseable {
                 List<Child> children = fromResultSetToChild(rs);
                 log.info("Found {} children with minimum age: {}", children.size(), age);
                 return children;
+            }
+        }
+    }
+
+    @Override
+    public Child findById(Long id) throws SQLException {
+        if (id == null) {
+            log.warn("Attempted to find child with null id");
+            throw new IllegalArgumentException("Child ID cannot be null");
+        }
+
+        try (PreparedStatement pst = conn.prepareStatement(SQL_SELECT_CHILD_BY_ID)) {
+            pst.setLong(1, id);
+
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    String firstName = rs.getString("first_name");
+                    String lastName = rs.getString("last_name");
+
+                    LocalDate date = null;
+                    Date birthDate = rs.getDate("birth_date");
+                    if (birthDate != null) {
+                        date = birthDate.toLocalDate();
+                    }
+
+                    log.info("Found child with id: {}", id);
+                    return new Child(id, firstName, lastName, date);
+                } else {
+                    log.warn("Child not found with id: {}", id);
+                    return null;
+                }
             }
         }
     }

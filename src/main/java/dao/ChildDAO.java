@@ -58,4 +58,6 @@ public interface ChildDAO {
      * @throws SQLException If a database access error occurs
      */
     List<Child> findChildrenWithoutBirthDate() throws SQLException;
+
+    Child findById(Long id) throws SQLException;
 }
